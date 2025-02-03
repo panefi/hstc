@@ -182,3 +182,13 @@ terraform.tfstate.backup
 
 #Ignore Terraform variables file
 variables.tf
+
+
+# Ignore zip files in specific layer directories
+layers/common_code/*.zip
+layers/third_party/*.zip
+
+
+# Ignore third party libraries but the requirements.txt file
+layers/third_party/python/*
+!layers/third_party/python/requirements.txt
