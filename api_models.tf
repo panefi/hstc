@@ -57,3 +57,52 @@ EOF
 }
 
 
+# Successful Response for request to /gates/{gateCode}/to/{targetGateCode}
+resource "aws_api_gateway_model" "cheapest_route_response" {
+  rest_api_id  = aws_api_gateway_rest_api.gates_api.id
+  name         = "CheapestRouteResponse"
+  content_type = "application/json"
+  schema       = <<EOF
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "CheapestRouteResponse",
+  "type": "object",
+  "properties": {
+    "cheapest_route": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cost": {
+      "type": "number"
+    }
+  },
+  "required": ["cheapest_route", "cost"]
+}
+EOF
+}
+
+
+# Successful Response for request to /gates/{gateCode}/to/{targetGateCode}/vehicle
+resource "aws_api_gateway_model" "get_vehicle_and_cost_response" {
+  rest_api_id  = aws_api_gateway_rest_api.gates_api.id
+  name         = "GetVehicleAndCostResponse"
+  content_type = "application/json"
+  schema       = <<EOF
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "GetVehicleAndCostResponse",
+  "type": "object",
+  "properties": {
+    "cost": {
+      "type": "number"
+    },
+    "vehicle": {
+      "type": "string"
+    }
+  },
+  "required": ["cost", "vehicle"]
+}
+EOF
+}

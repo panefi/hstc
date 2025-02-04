@@ -426,6 +426,8 @@ resource "aws_api_gateway_method" "get_cheapest_route_get" {
     "method.request.path.gateCode"       = true
     "method.request.path.targetGateCode" = true
   }
+
+  request_validator_id = aws_api_gateway_request_validator.param_validator.id
 }
 
 # 11) Integrate the GET method with the get_cheapest_route_function
@@ -438,6 +440,30 @@ resource "aws_api_gateway_integration" "get_cheapest_code_integration" {
   uri                     = aws_lambda_function.get_cheapest_route_function.invoke_arn
 }
 
+
+# Add a method response for the 200 status code
+resource "aws_api_gateway_method_response" "get_cheapest_route_200" {
+  rest_api_id = aws_api_gateway_rest_api.gates_api.id
+  resource_id = aws_api_gateway_resource.get_cheapest_route_resource.id
+  http_method = aws_api_gateway_method.get_cheapest_route_get.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = aws_api_gateway_model.cheapest_route_response.name
+  }
+}
+
+# Map the Lambda output to the method response
+resource "aws_api_gateway_integration_response" "get_cheapest_route_integration_200" {
+  rest_api_id             = aws_api_gateway_rest_api.gates_api.id
+  resource_id             = aws_api_gateway_resource.get_cheapest_route_resource.id
+  http_method             = aws_api_gateway_method.get_cheapest_route_get.http_method
+  status_code             = aws_api_gateway_method_response.get_cheapest_route_200.status_code
+
+  response_templates = {
+    "application/json" = ""
+  }
+}
 
 # 12) Allow API Gateway to invoke the Lambda
 resource "aws_lambda_permission" "allow_apigw" {
@@ -484,7 +510,7 @@ resource "aws_api_gateway_resource" "transport_distance_resource" {
 }
 
 # 17) Create a GET method on /transport/{distance}
-resource "aws_api_gateway_method" "transport_distance_get" {
+resource "aws_api_gateway_method" "get_vehicle_and_cost" {
   rest_api_id   = aws_api_gateway_rest_api.gates_api.id
   resource_id   = aws_api_gateway_resource.transport_distance_resource.id
   http_method   = "GET"
@@ -497,21 +523,46 @@ resource "aws_api_gateway_method" "transport_distance_get" {
     "method.request.querystring.passengers" = true
     "method.request.querystring.parking"    = true
   }
+  request_validator_id = aws_api_gateway_request_validator.param_validator.id
+}
+
+# Add a method response for the 200 status code
+resource "aws_api_gateway_method_response" "get_vehicle_and_cost_200" {
+  rest_api_id = aws_api_gateway_rest_api.gates_api.id
+  resource_id = aws_api_gateway_resource.transport_distance_resource.id
+  http_method = aws_api_gateway_method.get_vehicle_and_cost.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = aws_api_gateway_model.get_vehicle_and_cost_response.name
+  }
+}
+
+# Map the Lambda output to the method response
+resource "aws_api_gateway_integration_response" "get_vehicle_and_cost_integration_200" {
+  rest_api_id             = aws_api_gateway_rest_api.gates_api.id
+  resource_id             = aws_api_gateway_resource.transport_distance_resource.id
+  http_method             = aws_api_gateway_method.get_vehicle_and_cost.http_method
+  status_code             = aws_api_gateway_method_response.get_vehicle_and_cost_200.status_code
+
+  response_templates = {
+    "application/json" = ""
+  }
 }
 
 # 18) Integrate the GET method with the get_vehicle_and_cost_function
-resource "aws_api_gateway_integration" "transport_distance_integration" {
+resource "aws_api_gateway_integration" "get_vehicle_and_cost_integration" {
   rest_api_id             = aws_api_gateway_rest_api.gates_api.id
   resource_id             = aws_api_gateway_resource.transport_distance_resource.id
-  http_method             = aws_api_gateway_method.transport_distance_get.http_method
+  http_method             = aws_api_gateway_method.get_vehicle_and_cost.http_method
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
   uri                     = aws_lambda_function.get_vehicle_and_cost_function.invoke_arn
 }
 
 # 19) Allow API Gateway to invoke the Lambda
-resource "aws_lambda_permission" "allow_apigw_transport_distance" {
-  statement_id  = "AllowAPIGatewayInvokeTransportDistance"
+resource "aws_lambda_permission" "allow_apigw_get_vehicle_and_cost" {
+  statement_id  = "AllowAPIGatewayInvokeGetVehicleAndCost"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.get_vehicle_and_cost_function.function_name
   principal     = "apigateway.amazonaws.com"
@@ -524,7 +575,7 @@ resource "aws_api_gateway_deployment" "gates_deployment" {
       aws_api_gateway_integration.gates_integration,
       aws_api_gateway_integration.gate_code_integration,
 	    aws_api_gateway_integration.get_cheapest_code_integration,
-    	aws_api_gateway_integration.transport_distance_integration
+    	aws_api_gateway_integration.get_vehicle_and_cost_integration
 ]
   rest_api_id = aws_api_gateway_rest_api.gates_api.id
 }
