@@ -294,7 +294,7 @@ resource "aws_api_gateway_resource" "gates_resource" {
 }
 
 # 3) Create the GET method on /gates
-resource "aws_api_gateway_method" "gates_get" {
+resource "aws_api_gateway_method" "get_gates_method" {
   rest_api_id   = aws_api_gateway_rest_api.gates_api.id
   resource_id   = aws_api_gateway_resource.gates_resource.id
   http_method   = "GET"
@@ -302,10 +302,10 @@ resource "aws_api_gateway_method" "gates_get" {
 }
 
 # 4) Integrate the GET method with the get_gates_function Lambda function (Lambda Proxy integration)
-resource "aws_api_gateway_integration" "gates_integration" {
+resource "aws_api_gateway_integration" "get_gates_integration" {
   rest_api_id             = aws_api_gateway_rest_api.gates_api.id
   resource_id             = aws_api_gateway_resource.gates_resource.id
-  http_method             = aws_api_gateway_method.gates_get.http_method
+  http_method             = aws_api_gateway_method.get_gates_method.http_method
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
   uri                     = aws_lambda_function.get_gates_function.invoke_arn
@@ -315,7 +315,7 @@ resource "aws_api_gateway_integration" "gates_integration" {
 resource "aws_api_gateway_method_response" "gates_get_200" {
   rest_api_id = aws_api_gateway_rest_api.gates_api.id
   resource_id = aws_api_gateway_resource.gates_resource.id
-  http_method = aws_api_gateway_method.gates_get.http_method
+  http_method = aws_api_gateway_method.get_gates_method.http_method
   status_code = "200"
 
   response_models = {
@@ -324,15 +324,19 @@ resource "aws_api_gateway_method_response" "gates_get_200" {
 }
 
 # Map the Lambda output to the method response
-resource "aws_api_gateway_integration_response" "gates_integration_200" {
+resource "aws_api_gateway_integration_response" "get_gates_integration_response" {
   rest_api_id             = aws_api_gateway_rest_api.gates_api.id
   resource_id             = aws_api_gateway_resource.gates_resource.id
-  http_method             = aws_api_gateway_method.gates_get.http_method
+  http_method             = aws_api_gateway_method.get_gates_method.http_method
   status_code             = aws_api_gateway_method_response.gates_get_200.status_code
 
   response_templates = {
     "application/json" = ""
   }
+
+  depends_on = [
+    aws_api_gateway_integration.get_gates_integration
+  ]
 }
 
 
@@ -572,7 +576,7 @@ resource "aws_lambda_permission" "allow_apigw_get_vehicle_and_cost" {
 # Create an API Gatewaydeployment
 resource "aws_api_gateway_deployment" "gates_deployment" {
   depends_on = [
-      aws_api_gateway_integration.gates_integration,
+      aws_api_gateway_integration.get_gates_integration,
       aws_api_gateway_integration.gate_code_integration,
 	    aws_api_gateway_integration.get_cheapest_code_integration,
     	aws_api_gateway_integration.get_vehicle_and_cost_integration
