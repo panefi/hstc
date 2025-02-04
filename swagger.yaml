@@ -1,4 +1,3 @@
----
 swagger: "2.0"
 info:
   version: "2025-02-04T13:48:15Z"
@@ -8,9 +7,15 @@ host: "nxwd75p1k0.execute-api.eu-west-2.amazonaws.com"
 basePath: "/dev"
 schemes:
   - "https"
+tags:
+  - name: "Gates"
+  - name: "Transport"
 paths:
   /gates:
     get:
+      tags:
+        - "Gates"
+      description: "Retrieve a list of all gates with their details."
       produces:
         - "application/json"
       responses:
@@ -32,6 +37,9 @@ paths:
 
   /gates/{gateCode}:
     get:
+      tags:
+        - "Gates"
+      description: "Retrieve details for a specific gate identified by gateCode."
       produces:
         - "application/json"
       parameters:
@@ -53,6 +61,9 @@ paths:
 
   /gates/{gateCode}/to/{targetGateCode}:
     get:
+      tags:
+        - "Gates"
+      description: "Determine the cheapest route from one gate to another."
       produces:
         - "application/json"
       parameters:
@@ -76,6 +87,9 @@ paths:
 
   /transport/{distance}:
     get:
+      tags:
+        - "Transport"
+      description: "Calculate transport costs based on distance, number of passengers, and parking requirements."
       produces:
         - "application/json"
       parameters:
@@ -98,8 +112,8 @@ paths:
             $ref: "#/definitions/GetVehicleAndCostResponse"
           examples:
             application/json:
-              cheapest_route: ["SOL", "ARC", "DEN", "FOM", "ALS"]
-              cost: 337.0
+              cost: 45.0
+              vehicle: "HSTC Vehicle"
 
 definitions:
   GateByCodeResponse:
