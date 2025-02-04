@@ -59,7 +59,7 @@ resource "aws_db_instance" "mysql" {
 # IAM Role/Policy for Lambda
 #################################
 resource "aws_iam_role" "lambda_exec_role" {
-  name               = "lambda-exec-role"
+  name               = "lambda-exec-role-iam"
   assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
 }
 
@@ -402,6 +402,10 @@ resource "aws_api_gateway_integration_response" "gate_code_integration_200" {
   response_templates = {
     "application/json" = ""
   }
+
+  depends_on = [
+    aws_api_gateway_integration.gate_code_integration
+  ]
 }
 
 # 8) Add a child resource under /gates/{gateCode}/to
@@ -556,6 +560,10 @@ resource "aws_api_gateway_integration_response" "get_vehicle_and_cost_integratio
   response_templates = {
     "application/json" = ""
   }
+
+  depends_on = [
+    aws_api_gateway_integration.get_vehicle_and_cost_integration
+  ]
 }
 
 # 18) Integrate the GET method with the get_vehicle_and_cost_function
