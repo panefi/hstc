@@ -467,6 +467,10 @@ resource "aws_api_gateway_integration_response" "get_cheapest_route_integration_
   response_templates = {
     "application/json" = ""
   }
+
+  depends_on = [
+    aws_api_gateway_integration.get_cheapest_code_integration
+  ]
 }
 
 # 12) Allow API Gateway to invoke the Lambda
