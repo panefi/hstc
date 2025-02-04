@@ -311,6 +311,31 @@ resource "aws_api_gateway_integration" "gates_integration" {
   uri                     = aws_lambda_function.get_gates_function.invoke_arn
 }
 
+# Add a method response for the 200 status code
+resource "aws_api_gateway_method_response" "gates_get_200" {
+  rest_api_id = aws_api_gateway_rest_api.gates_api.id
+  resource_id = aws_api_gateway_resource.gates_resource.id
+  http_method = aws_api_gateway_method.gates_get.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = aws_api_gateway_model.gates_response.name
+  }
+}
+
+# Map the Lambda output to the method response
+resource "aws_api_gateway_integration_response" "gates_integration_200" {
+  rest_api_id             = aws_api_gateway_rest_api.gates_api.id
+  resource_id             = aws_api_gateway_resource.gates_resource.id
+  http_method             = aws_api_gateway_method.gates_get.http_method
+  status_code             = aws_api_gateway_method_response.gates_get_200.status_code
+
+  response_templates = {
+    "application/json" = ""
+  }
+}
+
+
 # 5) Add a child resource under /gates for {gateCode}
 resource "aws_api_gateway_resource" "gate_code_resource" {
   rest_api_id = aws_api_gateway_rest_api.gates_api.id
@@ -324,6 +349,12 @@ resource "aws_api_gateway_method" "gate_code_get" {
   resource_id   = aws_api_gateway_resource.gate_code_resource.id
   http_method   = "GET"
   authorization = "NONE"
+  request_parameters = {
+    "method.request.path.gateCode" = true
+  }
+
+  # Attach a request validator to validate the parameters.
+  request_validator_id = aws_api_gateway_request_validator.param_validator.id
 }
 
 # 7) Integrate the GET method with the new "get_gate_by_code_function"
@@ -334,6 +365,39 @@ resource "aws_api_gateway_integration" "gate_code_integration" {
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
   uri                     = aws_lambda_function.get_gate_by_code_function.invoke_arn
+}
+
+
+# Create a validator to enforce that required parameters are provided
+resource "aws_api_gateway_request_validator" "param_validator" {
+  rest_api_id                = aws_api_gateway_rest_api.gates_api.id
+  name                       = "params-validator"
+  validate_request_parameters = true
+  validate_request_body      = false  
+}
+
+# Add a method response for the 200 status code
+resource "aws_api_gateway_method_response" "gate_code_get_200" {
+  rest_api_id = aws_api_gateway_rest_api.gates_api.id
+  resource_id = aws_api_gateway_resource.gate_code_resource.id
+  http_method = aws_api_gateway_method.gate_code_get.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = aws_api_gateway_model.gate_by_code_response.name
+  }
+}
+
+# Map the Lambda output to the method response
+resource "aws_api_gateway_integration_response" "gate_code_integration_200" {
+  rest_api_id             = aws_api_gateway_rest_api.gates_api.id
+  resource_id             = aws_api_gateway_resource.gate_code_resource.id
+  http_method             = aws_api_gateway_method.gate_code_get.http_method
+  status_code             = aws_api_gateway_method_response.gate_code_get_200.status_code
+
+  response_templates = {
+    "application/json" = ""
+  }
 }
 
 # 8) Add a child resource under /gates/{gateCode}/to
