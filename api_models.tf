@@ -16,12 +16,6 @@ resource "aws_api_gateway_model" "gates_response" {
       "items": [
         {
           "type": "string"
-        },
-        {
-          "type": "string"
-        },
-        {
-          "type": "string"
         }
         ]
         }
