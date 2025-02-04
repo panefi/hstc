@@ -3,7 +3,7 @@ info:
   version: "2025-02-04T13:48:15Z"
   title: "HSTC - Interstellar Route Planner"
   description: "This API enables interstellar route planning between various gates. It supports endpoints for retrieving gate information, determining the cheapest route between gates, and calculating transportation costs."
-host: "nxwd75p1k0.execute-api.eu-west-2.amazonaws.com"
+host: "av5wytshy8.execute-api.eu-west-2.amazonaws.com"
 basePath: "/dev"
 schemes:
   - "https"
