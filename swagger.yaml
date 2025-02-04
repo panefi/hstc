@@ -1,0 +1,153 @@
+---
+swagger: "2.0"
+info:
+  version: "2025-02-04T13:48:15Z"
+  title: "HSTC - Interstellar Route Planner"
+  description: "This API enables interstellar route planning between various gates. It supports endpoints for retrieving gate information, determining the cheapest route between gates, and calculating transportation costs."
+host: "nxwd75p1k0.execute-api.eu-west-2.amazonaws.com"
+basePath: "/dev"
+schemes:
+  - "https"
+paths:
+  /gates:
+    get:
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/GatesResponse"
+          examples:
+            application/json:
+              result:
+                - 
+                  - "ALD"
+                  - "Aldermain"
+                  - '[{"hu": "200", "id": "SOL"}, {"hu": "160", "id": "ALS"}, {"hu": "320", "id": "VEG"}]'
+                - 
+                  - "ALS"
+                  - "Alshain"
+                  - '[{"hu": "1", "id": "ALT"}, {"hu": "1", "id": "ALD"}]'
+
+  /gates/{gateCode}:
+    get:
+      produces:
+        - "application/json"
+      parameters:
+        - name: "gateCode"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/GateByCodeResponse"
+          examples:
+            application/json:
+              result:
+                - "SOL"
+                - "Sol"
+                - '[{"hu": "100", "id": "RAN"}, {"hu": "90", "id": "PRX"}, {"hu": "100", "id": "SIR"}, {"hu": "200", "id": "ARC"}, {"hu": "250", "id": "ALD"}]'
+
+  /gates/{gateCode}/to/{targetGateCode}:
+    get:
+      produces:
+        - "application/json"
+      parameters:
+        - name: "targetGateCode"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "gateCode"
+          in: "path"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/CheapestRouteResponse"
+          examples:
+            application/json:
+              cheapest_route: ["SOL", "ARC", "DEN", "FOM", "ALS"]
+              cost: 337.0
+
+  /transport/{distance}:
+    get:
+      produces:
+        - "application/json"
+      parameters:
+        - name: "distance"
+          in: "path"
+          required: true
+          type: "string"
+        - name: "passengers"
+          in: "query"
+          required: true
+          type: "string"
+        - name: "parking"
+          in: "query"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/GetVehicleAndCostResponse"
+          examples:
+            application/json:
+              cheapest_route: ["SOL", "ARC", "DEN", "FOM", "ALS"]
+              cost: 337.0
+
+definitions:
+  GateByCodeResponse:
+    type: "object"
+    required:
+      - "result"
+    properties:
+      result:
+        type: "array"
+        items:
+          type: "string"
+    title: "GateByCodeResponse"
+
+  GetVehicleAndCostResponse:
+    type: "object"
+    required:
+      - "cost"
+      - "vehicle"
+    properties:
+      cost:
+        type: "number"
+      vehicle:
+        type: "string"
+    title: "GetVehicleAndCostResponse"
+
+  CheapestRouteResponse:
+    type: "object"
+    required:
+      - "cheapest_route"
+      - "cost"
+    properties:
+      cheapest_route:
+        type: "array"
+        items:
+          type: "string"
+      cost:
+        type: "number"
+    title: "CheapestRouteResponse"
+
+  GatesResponse:
+    type: "object"
+    required:
+      - "result"
+    properties:
+      result:
+        type: "array"
+        items:
+          type: "array"
+          items:
+            type: "string"
+    title: "GatesResponse"
