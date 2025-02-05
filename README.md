@@ -13,6 +13,7 @@ This project contains AWS Lambda functions for the HSTC Interstellar Route Plann
 ## Future Improvements
 - Add CI/CD pipeline to deploy automatically to AWS when a change is pushed to the branch.
 - Set GitFlow workflow for the development process.
+- Add unit tests for all lambda functions.
 - Add integration tests.
 
 ## Instructions to run the project locally
