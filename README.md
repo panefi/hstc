@@ -1,8 +1,21 @@
 # HSTC - Interstellar Route Planner API
 
-This project contains AWS Lambda functions for the HSTC Interstellar Route Planner API. The API enables route planning between various interstellar gates, providing functionality to find the cheapest routes and calculate transportation costs proposing the vehicle type (Personal or HSTC vehicle).
+This project contains AWS Lambda functions for the HSTC Interstellar Route Planner API. The API enables route planning between various interstellar gates, providing functionality to find the cheapest routes and calculate transportation costs proposing the vehicle type (Personal or HSTC vehicle). It also retrieves the gates and their details.
 
-## Prerequisites
+## Assumptions
+- When calculating the cost and proposing the vehicle type, we suggest to the passengers to use the HSTC vehicle, if the cost of the HSTC vehicle is equal to the cost of the Personal vehicle.
+- Given the requiremnts for optimal path search, the Dijkstra's Algorithm is well-suited for finding the shortest path in a graph. It efficiently calculates the minimum cost from the departure gate to all other gates.
+- The /transport/{distance}?passengers={number}&parking={days} endpoint calculates the cost for the first part of the trip to the gate, and returns the cheapest vehicle to use and the cost of the journey for the given distance (in AUs), number or passengers and days of parking (i.e. vehicle storage at the gate).
+
+## Important Notes
+- A separate documentation on how to set up the AWS infrastructure, run the terraform file, and open the Swagger UI is provided.
+
+## Future Improvements
+- Add CI/CD pipeline to deploy automatically to AWS when a change is pushed to the branch.
+- Set GitFlow workflow for the development process.
+- Add integration tests.
+
+## Instructions to run the project locally
 
 Before you begin, ensure you have the following installed:
 
