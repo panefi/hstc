@@ -192,3 +192,6 @@ layers/third_party/*.zip
 # Ignore third party libraries but the requirements.txt file
 layers/third_party/python/*
 !layers/third_party/python/requirements.txt
+
+# SAM Environment files
+env.json

@@ -1,0 +1,315 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  HSTC - Interstellar Route Planner API with Lambda functions and layers.
+
+Parameters:
+  DB_HOST:
+    Type: String
+    Default: replace_with_actual_value
+  DB_PORT:
+    Type: String
+    Default: replace_with_actual_value
+  DB_NAME:
+    Type: String
+    Default: replace_with_actual_value
+  DB_USER:
+    Type: String
+    Default: replace_with_actual_value
+  DB_PASSWORD:
+    Type: String
+    Default: replace_with_actual_value
+
+Globals:
+  Function:
+    Timeout: 10
+    Layers:
+      - !Ref CommonCodeLayer
+      - !Ref ThirdPartyLayer
+    Runtime: python3.13
+  Api:
+    Cors:
+      AllowMethods: "'GET,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+    Auth:
+      DefaultAuthorizer: NONE
+      AddDefaultAuthorizerToCorsPreflight: false
+      AddApiKeyRequiredToCorsPreflight: false
+      ApiKeyRequired: false
+
+Resources:
+  HSTCApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: HSTC-Interstellar-Route-Planner
+      StageName: dev
+      Description: API Gateway for HSTC Interstellar Route Planner
+      EndpointConfiguration: 
+        Type: REGIONAL
+      Auth:
+        DefaultAuthorizer: NONE
+        AddDefaultAuthorizerToCorsPreflight: false
+        AddApiKeyRequiredToCorsPreflight: false
+        ApiKeyRequired: false
+      Models:
+        GateByCodeResponse:
+          type: object
+          properties:
+            result:
+              type: array
+              items:
+                type: string
+          required:
+            - result
+        GetVehicleAndCostResponse:
+          type: object
+          properties:
+            cost:
+              type: number
+            vehicle:
+              type: string
+          required:
+            - cost
+            - vehicle
+        CheapestRouteResponse:
+          type: object
+          properties:
+            cheapest_route:
+              type: array
+              items:
+                type: string
+            cost:
+              type: number
+          required:
+            - cheapest_route
+            - cost
+        GatesResponse:
+          type: object
+          properties:
+            result:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+          required:
+            - result
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          version: "2025-02-04T13:48:15Z"
+          title: "HSTC - Interstellar Route Planner"
+          description: "This API enables interstellar route planning between various gates. It supports endpoints for retrieving gate information, determining the cheapest route between gates, and calculating transportation costs."
+        schemes:
+          - "https"
+        security: []
+        paths:
+          /gates:
+            get:
+              tags:
+                - "Gates"
+              description: "Retrieve a list of all gates with their details."
+              produces:
+                - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/GatesResponse"
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetGatesFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+                responses:
+                  default:
+                    statusCode: "200"
+                authType: "NONE"
+                apiKeyRequired: false
+          /gates/{gateCode}:
+            get:
+              tags:
+                - "Gates"
+              description: "Retrieve details for a specific gate identified by gateCode."
+              produces:
+                - "application/json"
+              parameters:
+                - name: "gateCode"
+                  in: "path"
+                  required: true
+                  type: "string"
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/GateByCodeResponse"
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetGateByCodeFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+                responses:
+                  default:
+                    statusCode: "200"
+                authType: "NONE"
+                apiKeyRequired: false
+          /gates/{gateCode}/to/{targetGateCode}:
+            get:
+              tags:
+                - "Gates"
+              description: "Determine the cheapest route from one gate to another."
+              produces:
+                - "application/json"
+              parameters:
+                - name: "targetGateCode"
+                  in: "path"
+                  required: true
+                  type: "string"
+                - name: "gateCode"
+                  in: "path"
+                  required: true
+                  type: "string"
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/CheapestRouteResponse"
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindCheapestRouteFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+                responses:
+                  default:
+                    statusCode: "200"
+                authType: "NONE"
+                apiKeyRequired: false
+          /transport/{distance}:
+            get:
+              tags:
+                - "Transport"
+              description: "Calculate transport costs based on distance, number of passengers, and parking requirements."
+              produces:
+                - "application/json"
+              parameters:
+                - name: "distance"
+                  in: "path"
+                  required: true
+                  type: "string"
+                - name: "passengers"
+                  in: "query"
+                  required: true
+                  type: "string"
+                - name: "parking"
+                  in: "query"
+                  required: true
+                  type: "string"
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/GetVehicleAndCostResponse"
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CalculateCostFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+                responses:
+                  default:
+                    statusCode: "200"
+                authType: "NONE"
+                apiKeyRequired: false
+        definitions:
+          GateByCodeResponse:
+            $ref: "#/Models/GateByCodeResponse"
+          GetVehicleAndCostResponse:
+            $ref: "#/Models/GetVehicleAndCostResponse"
+          CheapestRouteResponse:
+            $ref: "#/Models/CheapestRouteResponse"
+          GatesResponse:
+            $ref: "#/Models/GatesResponse"
+
+  CommonCodeLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: common-code-layer
+      Description: Common code utilities for HSTC functions
+      ContentUri: layers/common_code/
+      CompatibleRuntimes:
+        - python3.13
+      RetentionPolicy: Retain
+
+  ThirdPartyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: third-party-layer
+      Description: Third party dependencies including mysql-connector-python
+      ContentUri: layers/third_party/
+      CompatibleRuntimes:
+        - python3.13
+      RetentionPolicy: Retain
+
+  FindCheapestRouteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_handler.lambda_handler
+      CodeUri: lambdas/get_cheapest_route/
+      Description: Finds the cheapest route between two gates
+      Environment:
+        Variables:
+          DB_HOST: !Ref DB_HOST
+          DB_PORT: !Ref DB_PORT
+          DB_NAME: !Ref DB_NAME
+          DB_USER: !Ref DB_USER
+          DB_PASSWORD: !Ref DB_PASSWORD
+
+  GetGateByCodeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_handler.lambda_handler
+      CodeUri: lambdas/get_gate_by_code/
+      Description: Gets details for a specific gate by code
+      Environment:
+        Variables:
+          DB_HOST: !Ref DB_HOST
+          DB_PORT: !Ref DB_PORT
+          DB_NAME: !Ref DB_NAME
+          DB_USER: !Ref DB_USER
+          DB_PASSWORD: !Ref DB_PASSWORD
+
+  GetGatesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_handler.lambda_handler
+      CodeUri: lambdas/get_gates/
+      Description: Gets a list of all gates
+      Environment:
+        Variables:
+          DB_HOST: !Ref DB_HOST
+          DB_PORT: !Ref DB_PORT
+          DB_NAME: !Ref DB_NAME
+          DB_USER: !Ref DB_USER
+          DB_PASSWORD: !Ref DB_PASSWORD
+
+  CalculateCostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_handler.lambda_handler
+      CodeUri: lambdas/get_vehicle_and_cost/
+      Description: Calculates transport cost based on distance and parameters
+      Environment:
+        Variables:
+          DB_HOST: !Ref DB_HOST
+          DB_PORT: !Ref DB_PORT
+          DB_NAME: !Ref DB_NAME
+          DB_USER: !Ref DB_USER
+          DB_PASSWORD: !Ref DB_PASSWORD
+
+Outputs:
+  HSTCApi:
+    Description: "API Gateway endpoint URL for dev stage"
+    Value: !Sub "https://${HSTCApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
+  ApiId:
+    Description: "API Gateway ID"
+    Value: !Ref HSTCApi
