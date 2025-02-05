@@ -15,6 +15,8 @@ This project contains AWS Lambda functions for the HSTC Interstellar Route Plann
 - Set GitFlow workflow for the development process.
 - Add unit tests for all lambda functions.
 - Add integration tests.
+- Add lambdas to create a new gate, update and delete an existing one.
+- Split the Terraform template.yaml into multiple files for better organization.
 
 ## Instructions to run the project locally
 
