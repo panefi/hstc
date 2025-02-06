@@ -31,24 +31,17 @@ def lambda_handler(event, context):
         result = route_finder.find_cheapest_route(departure_gate, arrival_gate)
 
         if result["path"]:
-            logger.info({"cheapest_route": result["path"], "cost": result["cost"]})
+            logger.info({"cheapest_route": result["path"], "distance": result["distance"], "cost_per_person": int(result["distance"]) * 0.10})
             return {
                 "statusCode": 200,
-                "body": json.dumps({
-                    "cheapest_route": result["path"],
-                    "cost": result["cost"]
-                })
+                "body": json.dumps({"cheapest_route": result["path"], "distance": result["distance"], "cost_per_person": int(result["distance"]) * 0.10})
             }
         else:
             message = f"No route found from {departure_gate} to {arrival_gate}."
             logger.info(message)
             return {
                 "statusCode": 404,
-                "body": json.dumps({
-                    "cheapest_route": [],
-                    "cost": float('inf'),
-                    "message": message
-                })
+                "body": json.dumps({"cheapest_route": [], "distance": "N/A", "cost_per_person": "N/A"})
             }
 
     except Exception as e:

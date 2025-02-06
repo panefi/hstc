@@ -38,17 +38,17 @@ class RouteFinder:
         visited = set()
 
         while queue:
-            current_cost, current_gate, path = heapq.heappop(queue)
+            current_distance, current_gate, path = heapq.heappop(queue)
 
             if current_gate == end:
-                return {"cost": current_cost, "path": path}
+                return {"distance": current_distance, "path": path}
 
             if current_gate in visited:
                 continue
 
             visited.add(current_gate)
 
-            for neighbor, cost in self.graph.get(current_gate, []):
+            for neighbor, distance in self.graph.get(current_gate, []):
                 if neighbor not in visited:
-                    heapq.heappush(queue, (current_cost + cost, neighbor, path + [neighbor]))
-        return {"cost": float('inf'), "path": []}  # No route found
+                    heapq.heappush(queue, (current_distance + distance, neighbor, path + [neighbor]))
+        return {"distance": float('inf'), "path": []}  # No route found 
