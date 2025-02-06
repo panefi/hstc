@@ -68,11 +68,14 @@ resource "aws_api_gateway_model" "cheapest_route_response" {
         "type": "string"
       }
     },
-    "cost": {
+    "distance": {
+      "type": "number"
+    },
+    "cost_per_person": {
       "type": "number"
     }
   },
-  "required": ["cheapest_route", "cost"]
+  "required": ["cheapest_route", "distance", "cost_per_person"]
 }
 EOF
 }

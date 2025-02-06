@@ -83,7 +83,8 @@ paths:
           examples:
             application/json:
               cheapest_route: ["SOL", "ARC", "DEN", "FOM", "ALS"]
-              cost: 337.0
+              distance: 337.0
+              cost_per_person: 33.7
 
   /transport/{distance}:
     get:
